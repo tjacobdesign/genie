@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css" />
-    <script src="bower_components/angular/angular.js"></script>
   </head>
   <body>
     <div>
@@ -18,10 +17,10 @@
     </div>
     <a href="https://github.com/kentcdodds/genie"><img id="fork-me" src="images/forkme.png" alt="Fork me on GitHub"></a>
     <header>
-      <img id="genie-logo" src="images/genie-lamp.png" alt="GenieJS Logo" ng-click="rubLamp($event, genieStyle.template)" ga>
+      <img id="genie-logo" src="images/genie-lamp.png" alt="GenieJS Logo">
       <h3>Type an apostrophe ( ' ) to see all the wishes</h3>
       <small class="muted">*You can also click/tap the lamp image above.</small>
-      <h4 ng-if="wishesMade">Wishes made: {{wishesMade}}</h4>
+      <h4 id="wishesMade">Wishes made: <span>0</span></h4>
       <p>
         GenieJS was built to simulate the behavior in apps like
         <a href="http://www.alfredapp.com/" genie-wish="What is Alfred?" wish-context="{{demoContext}}" wish-i-icon="{{iconPrefix}}question-circle" target="_blank" ga>Alfred</a>.<br />
@@ -152,39 +151,8 @@
     </div>
 
     <div id="bottom-stuff">
-      <div class="custom-template {{genieStyle.color + ' ' + genieStyle.size + ' ' + genieStyle.animationSpeed}}" ng-show="genieStyle.template === 'custom'">
-        <div ux-lamp="lamp" lamp-visible="lamp.genieVisible" rub-class="visible" wish-callback="lamp.wishMade()" local-storage="genie">
-          <input type="text" ng-model="lamp.input" class="lamp-input input form-control" />
-          <div>
-            This is a custom template! Type "Default" to go back <i class="{{iconPrefix}}smile-o"></i><br />
-            You can customize the dom used for the lamp. Type "uxGenie" to see the docs.
-            <div  ng-if="lamp.focusedWish">
-              Wish <strong>"{{lamp.focusedWish.data.uxGenie.displayText || lamp.focusedWish.magicWords[0]}}"</strong> Data:<br />
-              Total Times Executed: {{lamp.focusedWish.data.timesMade.total}}<br />
-              Magic words executed with:
-              <ul>
-                <li ng-repeat="(key, value) in lamp.focusedWish.data.timesMade.magicWords" ng-if="key !== 'total'">
-                  {{key}}: {{value}}
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div ng-show="lamp.matchingWishes.length > 0" class="lamp-wishes-container">
-            <div class="lamp-wish wish-{{wish.id}}" ng-repeat="wish in lamp.matchingWishes" ng-class="{focused: lamp.focusedWish == wish}" ng-click="lamp.makeWish(wish)" ng-mouseenter="lamp.focusOnWish(wish, false)">
-              <span class="wish-icon">
-                <img class="wish-img-icon" ng-if="wish.data.uxGenie.imgIcon" ng-src="{{wish.data.uxGenie.imgIcon}}">
-                <i class="wish-i-icon {{wish.data.uxGenie.iIcon}}" ng-if="wish.data.uxGenie.iIcon"></i>
-              </span>
-              <span class="wish-display">{{wish.data.uxGenie.displayText || wish.magicWords[0]}}</span>
-            </div>
-          </div>
-        </div>
-      </div>
       
-      <div class="default-template {{genieStyle.color + ' ' + genieStyle.size + ' ' + genieStyle.animationSpeed}}" ng-show="genieStyle.template === 'default'">
-        <div ux-lamp lamp-visible="customLamp.genieVisible" rub-class="visible" wish-callback="customLamp.wishMade()" local-storage="genie">
-        </div>
-      </div>
+      <div id="genie"></div>
 
       <hr />
 
@@ -199,9 +167,8 @@
     </div>
     
     <script src="src/genie.js"></script>
-    <script src="demo-js/angular-app.js"></script>
-    <script src="bower_components/ux-genie/uxGenie.js"></script>
-    <script src="bower_components/angular-ga/ga.js"></script>
+    <script src="src/lamps/vanilla/genie-lamp-vanilla.js"></script>
+    <script src="demo-js/vanilla-app.js"></script>
 
     <!-- Twitter -->
     <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
