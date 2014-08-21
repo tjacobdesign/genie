@@ -6,26 +6,38 @@
   } else if (typeof module !== 'undefined' && module.exports) {
     module.exports = factory(require('geniejs'));
   } else {
-    root.lamp = factory(genie);
+    root.Lamp = factory(genie);
   }
 }(this, function(genie) {
   'use strict';
-
 
   function Lamp(el) {
     var _this = this;
     this.el = el;
     this.wishes = [];
+    this.currentIndex = 0;
 
     this.el.innerHTML = Lamp.template;
     this.input = document.getElementById('lamp-input');
     this.wishesContainer = document.getElementById('lamp-wishes-container');
 
+    // Set this to false to keep it from autohiding
     this.autoHide = true;
     this.hide();
 
     this.input.addEventListener('keyup', function(e) {
-      _this.updateList(_this);
+      if (e.keyCode === 40) { // down arrow
+        _this.focusOnWish(_this.currentIndex + 1);
+        e.preventDefault();
+      } else if (e.keyCode === 38) { // up arrow
+        _this.focusOnWish(_this.currentIndex - 1);
+        e.preventDefault();
+      } else if (e.keyCode === 13) { // enter key
+        genie.makeWish(_this.focusedWish, _this.focusedWish.magicWords[0]);
+      } else {
+        var tempFunc = _this.updateList.bind(_this);
+        tempFunc();
+      }
       e.preventDefault();
     });
   }
@@ -85,33 +97,55 @@
     });
   };
 
-  Lamp.prototype.trigger = function(element, eventName) {
-    var event;
-
-    if (window.CustomEvent) {
-      event = new CustomEvent('my-event', {detail: {some: 'data'}});
-    } else {
-      // IE fallback
-      event = document.createEvent('CustomEvent');
-      event.initCustomEvent('my-event', true, true, {some: 'data'});
+  Lamp.prototype.focusOnWish = function(num) {
+    if (this.wishes.length && num < 0) {
+      num = this.wishes.length - 1;
+    } else if (this.wishes.length && num >= this.wishes.length) {
+      num = 0;
     }
 
-    element.dispatchEvent(event);
+    this.wishDom[this.currentIndex].classList.remove('focused');
+    this.wishDom[num].classList.add('focused');
+    this.focusedWish = this.wishes[num];
+    this.scrollToWish(num);
+    this.currentIndex = num;
   };
 
-  Lamp.prototype.updateList = function(lamp) {
-    var _this = lamp || this;
+  Lamp.prototype.scrollToWish = function(index) {
+    var containerEl = this.wishesContainer;
+    var containerHeight = this.wishesContainer.offsetHeight;
+    var focusedWishElement = this.wishes[index];
+    var containerTop = containerEl.scrollTop;
+    var containerBottom = containerTop + containerHeight;
+    var focusedWishTop = 0;
+    for (var i = 0; i < this.wishes.length; i++) {
+      if (i >= index) break;
+      focusedWishTop += this.wishes[i].offsetHeight;
+    }
+    var focusedWishBottom = focusedWishTop + focusedWishElement.offsetHeight;
+    if (containerBottom < focusedWishBottom) {
+      containerEl.scrollTop = focusedWishBottom - containerHeight;
+    } else if (containerTop > focusedWishTop) {
+      containerEl.scrollTop = focusedWishTop;
+    }
+  };
+
+
+  Lamp.prototype.updateList = function() {
+    var _this = this;
     var value = _this.input.value;
-    var wishes = genie.getMatchingWishes(value);
 
     this.wishesContainer.innerHTML = '';
 
     if (!value) {
       return false;
     }
+    if (value === "'") value = '';
+
+    this.wishes = genie.getMatchingWishes(value);
+    var wishes = this.wishes;
 
     for (var i = 0; i < wishes.length; i++) {
-      var wish = wishes[i];
       /*
         <div class="lamp-wish wish-{{wish.id}}">
           <span class="wish-icon">
@@ -121,17 +155,18 @@
           <span class="wish-display-text">{{wish.text}}</span>
         </div>
       */
+      var wish = wishes[i];
       var wishEl = document.createElement('div');
       wishEl.classList.add('lamp-wish');
       wishEl.classList.add('wish-' + wish.id);
 
-      if (wish.icon || wish.img) {
+      if (wish.data.icon || wish.img) {
         var wishSpan = document.createElement('span');
         wishSpan.classList.add('wish-icon');
-        if (wish.icon) {
+        if (wish.data.icon) {
           var icon = document.createElement('i');
           icon.classList.add('wish-i-icon');
-          icon.classList.add(wish.icon);
+          icon.className += ' ' + wish.data.icon;
           wishSpan.appendChild(icon);
         } else {
           var img = document.createElement('img');
@@ -148,7 +183,8 @@
       wishEl.appendChild(text);
 
       this.wishesContainer.appendChild(wishEl);
-    };
+      this.wishDom = this.wishesContainer.querySelectorAll('.lamp-wish');
+    }
 
     if (wishes.length) {
       this.wishesContainer.classList.remove('lamp-hidden');

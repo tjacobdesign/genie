@@ -17,7 +17,6 @@
   });
 
   document.addEventListener('keydown', function(e) {
-    console.log(e.keyCode);
     if (e.keyCode === 17) { // ctrl key
       ctrlPressed = true;
     }
@@ -38,14 +37,14 @@
 
 
   function addNavigateWishWithoutPrefix(magicWord, shareUrl, iIcon) {
-    mainLamp.addWish(magicWord, {
-      destination: shareUrl,
-      openNewTab: true
-    }, {
-      uxGenie: {
-        iIcon: iIcon
-      }
-    });
+    mainLamp.addWish(
+      magicWord,
+      {
+        destination: shareUrl,
+        openNewTab: true
+      },
+      { icon: iIcon }
+    );
   }
 
   addNavigateWishWithoutPrefix('Tweet #GenieJS', 'https://twitter.com/intent/tweet?hashtags=GenieJS&original_referer=' + genieHome + '&text=' + genieTagline + '&tw_p=tweetbutton&url=' + genieHome + '&via=kentcdodds', iconPrefix + 'share');
