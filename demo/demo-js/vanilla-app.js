@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  var mainLamp = new lamp(document.getElementById('genie'));
+  var mainLamp = new Lamp(document.getElementById('genie'));
 
   var iconPrefix = 'fa fa-';
 

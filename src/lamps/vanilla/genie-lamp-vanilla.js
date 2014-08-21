@@ -16,6 +16,8 @@
     this.el = el;
     this.wishes = [];
     this.currentIndex = 0;
+    this.focusedWish = 0;
+    this.val = '';
 
     this.el.innerHTML = Lamp.template;
     this.input = document.getElementById('lamp-input');
@@ -26,14 +28,15 @@
     this.hide();
 
     this.input.addEventListener('keyup', function(e) {
+      console.log(_this.focusedWish);
       if (e.keyCode === 40) { // down arrow
         _this.focusOnWish(_this.currentIndex + 1);
         e.preventDefault();
       } else if (e.keyCode === 38) { // up arrow
         _this.focusOnWish(_this.currentIndex - 1);
         e.preventDefault();
-      } else if (e.keyCode === 13) { // enter key
-        genie.makeWish(_this.focusedWish, _this.focusedWish.magicWords[0]);
+      } else if (e.keyCode === 13 && _this.focusedWish) { // enter key
+        genie.makeWish(_this.wishes[_this.focusedWish], _this.wishes[_this.focusedWish].magicWords[0]);
       } else {
         var tempFunc = _this.updateList.bind(_this);
         tempFunc();
@@ -106,7 +109,7 @@
 
     this.wishDom[this.currentIndex].classList.remove('focused');
     this.wishDom[num].classList.add('focused');
-    this.focusedWish = this.wishes[num];
+    this.focusedWish = num;
     this.scrollToWish(num);
     this.currentIndex = num;
   };
@@ -114,16 +117,17 @@
   Lamp.prototype.scrollToWish = function(index) {
     var containerEl = this.wishesContainer;
     var containerHeight = this.wishesContainer.offsetHeight;
-    var focusedWishElement = this.wishes[index];
+    var focusedWishElement = document.querySelector('.wish-' + this.wishes[index].id);
     var containerTop = containerEl.scrollTop;
     var containerBottom = containerTop + containerHeight;
+
     var focusedWishTop = 0;
     for (var i = 0; i < this.wishes.length; i++) {
       if (i >= index) break;
-      focusedWishTop += this.wishes[i].offsetHeight;
+      focusedWishTop += focusedWishElement.offsetHeight + 12;
     }
     var focusedWishBottom = focusedWishTop + focusedWishElement.offsetHeight;
-    if (containerBottom < focusedWishBottom) {
+    if (containerBottom <= focusedWishBottom) {
       containerEl.scrollTop = focusedWishBottom - containerHeight;
     } else if (containerTop > focusedWishTop) {
       containerEl.scrollTop = focusedWishTop;
@@ -134,6 +138,11 @@
   Lamp.prototype.updateList = function() {
     var _this = this;
     var value = _this.input.value;
+
+    if (value === this.val) return;
+    else this.val = value;
+
+    this.focusedWish = 0;
 
     this.wishesContainer.innerHTML = '';
 
